@@ -1,0 +1,2 @@
+CREATE TABLE IF NOT EXISTS grades (id INTEGER PRIMARY KEY, term INTEGER NOT NULL, course_id INTEGER NOT NULL, grade REAL, student_number TEXT NOT NULL);
+
