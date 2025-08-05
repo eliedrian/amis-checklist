@@ -25,12 +25,15 @@ INGEST_MARKER_GRADES=$(ODIR)/.ingested_grades
 
 TARGETS=database collectgrades collectstudents ingest
 
-.phony: all clean collectgrades collectstudents ingeststudents ingest ingestgrades
+.phony: all clean collectgrades collectstudents query ingeststudents ingest ingestgrades
 
 all: $(TARGETS)
 
 clean:
 	rm -r $(ODIR)
+
+query:
+	sqlite3 $(DB_PATH)
 
 ingest: ingeststudents ingestgrades
 
