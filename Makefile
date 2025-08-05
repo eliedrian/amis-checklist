@@ -13,8 +13,8 @@ DB_NAME=data.db
 DB_PATH=$(ODIR)/$(DB_NAME)
 
 GRADES_JSON=$(ODIR)/grades.json
-_USERS_JSON=$(ODIR)/_users.json
-_STUDENTS_JSON=$(ODIR)/_students.json
+_USERS_JSON=$(ODIR)/_users.jsonl
+_STUDENTS_JSON=$(ODIR)/_students.jsonl
 STUDENTS_JSON=$(ODIR)/students.json
 
 RAW_USERS=$(wildcard $(DATA_DIR)/users*.json)
@@ -39,13 +39,13 @@ collectstudents: $(STUDENTS_JSON)
 collectgrades: $(GRADES_JSON)
 
 $(STUDENTS_JSON): $(_USERS_JSON) $(_STUDENTS_JSON) $(STUDENTS_JOIN_FILTER)
-	jq -n --slurpfile users $< --slurpfile students $(_STUDENTS_JSON) -f $(STUDENTS_JOIN_FILTER) > $@
+	jq -n --slurpfile users $(_USERS_JSON) --slurpfile students $(_STUDENTS_JSON) -f $(STUDENTS_JOIN_FILTER) > $@
 
 $(_USERS_JSON): $(RAW_USERS) | $(ODIR)
-	jq -f $(USERS_FILTER) -s $< > $@
+	jq -f $(USERS_FILTER) -s $(RAW_USERS) -c > $@
 
-$(_STUDENTS_JSON): $(RAW_STUDENTS) | $(ODIR)
-	jq -f $(STUDENTS_FILTER) -s $< > $@
+$(_STUDENTS_JSON): $(RAW_STUDENTS) $(STUDENT_IDS_JSON) | $(ODIR)
+	jq -f $(STUDENTS_FILTER) --slurpfile ids $(STUDENT_IDS_JSON) -s $(RAW_STUDENTS) -c > $@
 
 $(DB_PATH): | $(ODIR)
 	sqlite3 $@ < schema.sql
@@ -54,4 +54,4 @@ $(STUDENT_IDS_JSON): $(STUDENT_IDS) | $(ODIR)
 	jq -R -s -c 'split("\n") | map(select(length > 0))' $< > $@
 
 $(GRADES_JSON): $(RAW_STUDENT_GRADES) $(STUDENT_IDS_JSON) $(FILTER) | $(ODIR)
-	jq --argjson ids '$(shell cat $<)' -f $(FILTER) -s $< > $@
+	jq --argjson ids '$(shell cat $(STUDENT_IDS_JSON))' -f $(FILTER) -s $(RAW_STUDENT_GRADES) > $@
