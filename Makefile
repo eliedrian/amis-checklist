@@ -20,14 +20,32 @@ STUDENTS_JSON=$(ODIR)/students.json
 RAW_USERS=$(wildcard $(DATA_DIR)/users*.json)
 RAW_STUDENTS=$(wildcard $(DATA_DIR)/students*.json)
 
-TARGETS=database collectgrades collectstudents
+INGEST_MARKER_STUDENTS=$(ODIR)/.ingested_students
+INGEST_MARKER_GRADES=$(ODIR)/.ingested_grades
 
-.phony: all clean collectgrades collectstudents
+TARGETS=database collectgrades collectstudents ingest
+
+.phony: all clean collectgrades collectstudents ingeststudents ingest ingestgrades
 
 all: $(TARGETS)
 
 clean:
 	rm -r $(ODIR)
+
+ingest: ingeststudents ingestgrades
+
+ingeststudents: $(INGEST_MARKER_STUDENTS)
+
+ingestgrades: $(INGEST_MARKER_GRADES)
+
+$(INGEST_MARKER_STUDENTS): $(STUDENTS_JSON)
+	python ingest.py --db $(DB_PATH) students $(STUDENTS_JSON)
+	touch $@
+
+
+$(INGEST_MARKER_GRADES): $(GRADES_JSON)
+	python ingest.py --db $(DB_PATH) grades $(GRADES_JSON)
+	touch $@
 
 $(ODIR):
 	mkdir -p $(ODIR)
