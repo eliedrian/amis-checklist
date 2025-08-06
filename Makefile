@@ -9,8 +9,10 @@ STUDENTS_JOIN_FILTER=students_join_filter.jq
 RAW_STUDENT_GRADES=$(wildcard $(DATA_DIR)/student-grades*.json)
 STUDENT_IDS=student_ids.txt
 STUDENT_IDS_JSON=$(ODIR)/student_ids.json
-DB_NAME=data.db
-DB_PATH=$(ODIR)/$(DB_NAME)
+BRONZE_DB_NAME=bronze.db
+BRONZE_DB_PATH=$(ODIR)/$(BRONZE_DB_NAME)
+SILVER_DB_NAME=silver.db
+SILVER_DB_PATH=$(ODIR)/$(SILVER_DB_NAME)
 
 GRADES_JSON=$(ODIR)/grades.json
 _USERS_JSON=$(ODIR)/_users.jsonl
@@ -41,19 +43,18 @@ ingeststudents: $(INGEST_MARKER_STUDENTS)
 
 ingestgrades: $(INGEST_MARKER_GRADES)
 
-$(INGEST_MARKER_STUDENTS): $(STUDENTS_JSON)
-	python ingest.py --db $(DB_PATH) students $(STUDENTS_JSON)
+$(INGEST_MARKER_STUDENTS): $(STUDENTS_JSON) | $(BRONZE_DB_PATH)
+	python ingest.py --db $(BRONZE_DB_PATH) students $(STUDENTS_JSON)
 	touch $@
 
-
-$(INGEST_MARKER_GRADES): $(GRADES_JSON)
-	python ingest.py --db $(DB_PATH) grades $(GRADES_JSON)
+$(INGEST_MARKER_GRADES): $(GRADES_JSON) | $(BRONZE_DB_PATH)
+	python ingest.py --db $(BRONZE_DB_PATH) grades $(GRADES_JSON)
 	touch $@
 
 $(ODIR):
 	mkdir -p $(ODIR)
 
-database: $(DB_PATH)
+database: $(SILVER_DB_PATH) $(BRONZE_DB_PATH)
 
 collectstudents: $(STUDENTS_JSON)
 
@@ -68,7 +69,10 @@ $(_USERS_JSON): $(RAW_USERS) | $(ODIR)
 $(_STUDENTS_JSON): $(RAW_STUDENTS) $(STUDENT_IDS_JSON) | $(ODIR)
 	jq -f $(STUDENTS_FILTER) --slurpfile ids $(STUDENT_IDS_JSON) -s $(RAW_STUDENTS) -c > $@
 
-$(DB_PATH): | $(ODIR)
+$(BRONZE_DB_PATH): | $(ODIR)
+	sqlite3 $@ < bronze_schema.sql
+
+$(SILVER_DB_PATH): | $(ODIR)
 	sqlite3 $@ < schema.sql
 
 $(STUDENT_IDS_JSON): $(STUDENT_IDS) | $(ODIR)
