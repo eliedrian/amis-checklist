@@ -19,6 +19,8 @@ _USERS_JSON=$(ODIR)/_users.jsonl
 _STUDENTS_JSON=$(ODIR)/_students.jsonl
 STUDENTS_JSON=$(ODIR)/students.json
 
+INIT_SQL=$(ODIR)/init.sql
+
 RAW_USERS=$(wildcard $(DATA_DIR)/users*.json)
 RAW_STUDENTS=$(wildcard $(DATA_DIR)/students*.json)
 
@@ -34,8 +36,12 @@ all: $(TARGETS)
 clean:
 	rm -r $(ODIR)
 
-query:
-	sqlite3 $(DB_PATH)
+$(INIT_SQL):
+	echo "ATTACH DATABASE '$(BRONZE_DB_PATH)' AS bronze;" > $@
+	echo "ATTACH DATABASE '$(SILVER_DB_PATH)' AS silver;" >> $@
+
+query: $(INIT_SQL)
+	sqlite3 -table -header -init $<
 
 ingest: ingeststudents ingestgrades
 
