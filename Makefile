@@ -17,6 +17,10 @@ BRONZE_DB_PATH=$(ODIR)/$(BRONZE_DB_NAME)
 SILVER_DB_NAME=silver.db
 SILVER_DB_PATH=$(ODIR)/$(SILVER_DB_NAME)
 
+SILVER_SCHEMA_SQL=silver_schema.sql
+BRONZE_SCHEMA_SQL=bronze_schema.sql
+SILVER_SQL=silver.sql
+
 GRADES_JSON=$(ODIR)/grades.json
 _USERS_JSON=$(ODIR)/_users.jsonl
 _STUDENTS_JSON=$(ODIR)/_students.jsonl
@@ -36,9 +40,9 @@ INGEST_MARKER_GRADES=$(ODIR)/.ingested_grades
 INGEST_MARKER_CLASSES=$(ODIR)/.ingested_classes
 INGEST_MARKER_COURSES=$(ODIR)/.ingested_courses
 
-TARGETS=database collectgrades collectstudents ingest
+TARGETS=database collectgrades collectstudents ingest silver
 
-.phony: all clean collectgrades collectstudents query ingeststudents ingest ingestgrades ingestclasses ingestcourses
+.phony: all clean collectgrades collectstudents query ingeststudents ingest ingestgrades ingestclasses ingestcourses silver
 
 all: $(TARGETS)
 
@@ -48,6 +52,9 @@ clean:
 $(INIT_SQL):
 	echo "ATTACH DATABASE '$(BRONZE_DB_PATH)' AS bronze;" > $@
 	echo "ATTACH DATABASE '$(SILVER_DB_PATH)' AS silver;" >> $@
+
+silver: $(INIT_SQL) $(SILVER_SQL) $(BRONZE_DB_PATH) | ingest
+	sqlite3 -init $< < $(SILVER_SQL)
 
 query: $(INIT_SQL)
 	sqlite3 -table -header -init $<
@@ -102,11 +109,11 @@ $(_USERS_JSON): $(RAW_USERS) | $(ODIR)
 $(_STUDENTS_JSON): $(RAW_STUDENTS) $(STUDENT_IDS_JSON) | $(ODIR)
 	jq -f $(STUDENTS_FILTER) --slurpfile ids $(STUDENT_IDS_JSON) -s $(RAW_STUDENTS) -c > $@
 
-$(BRONZE_DB_PATH): | $(ODIR)
-	sqlite3 $@ < bronze_schema.sql
+$(BRONZE_DB_PATH): $(BRONZE_SCHEMA_SQL) | $(ODIR)
+	sqlite3 $@ < $<
 
-$(SILVER_DB_PATH): | $(ODIR)
-	sqlite3 $@ < schema.sql
+$(SILVER_DB_PATH): $(SILVER_SCHEMA_SQL) | $(ODIR)
+	sqlite3 $@ < $<
 
 $(STUDENT_IDS_JSON): $(STUDENT_IDS) | $(ODIR)
 	jq -R -s -c 'split("\n") | map(select(length > 0))' $< > $@
