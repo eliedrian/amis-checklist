@@ -6,6 +6,8 @@ FILTER=$(FILTERS_DIR)/filter.jq
 USERS_FILTER=$(FILTERS_DIR)/users_filter.jq
 STUDENTS_FILTER=$(FILTERS_DIR)/students_filter.jq
 STUDENTS_JOIN_FILTER=$(FILTERS_DIR)/students_join_filter.jq
+CLASSES_FILTER=$(FILTERS_DIR)/classes_filter.jq
+COURSES_FILTER=$(FILTERS_DIR)/courses_filter.jq
 
 RAW_STUDENT_GRADES=$(wildcard $(DATA_DIR)/student-grades*.json)
 STUDENT_IDS=student_ids.txt
@@ -19,18 +21,24 @@ GRADES_JSON=$(ODIR)/grades.json
 _USERS_JSON=$(ODIR)/_users.jsonl
 _STUDENTS_JSON=$(ODIR)/_students.jsonl
 STUDENTS_JSON=$(ODIR)/students.json
+CLASSES_JSON=$(ODIR)/classes.json
+COURSES_JSON=$(ODIR)/courses.json
 
 INIT_SQL=$(ODIR)/init.sql
 
 RAW_USERS=$(wildcard $(DATA_DIR)/users*.json)
 RAW_STUDENTS=$(wildcard $(DATA_DIR)/students*.json)
+RAW_CLASSES=$(wildcard $(DATA_DIR)/classes*.json)
+RAW_COURSES=$(wildcard $(DATA_DIR)/courses*.json)
 
 INGEST_MARKER_STUDENTS=$(ODIR)/.ingested_students
 INGEST_MARKER_GRADES=$(ODIR)/.ingested_grades
+INGEST_MARKER_CLASSES=$(ODIR)/.ingested_classes
+INGEST_MARKER_COURSES=$(ODIR)/.ingested_courses
 
 TARGETS=database collectgrades collectstudents ingest
 
-.phony: all clean collectgrades collectstudents query ingeststudents ingest ingestgrades
+.phony: all clean collectgrades collectstudents query ingeststudents ingest ingestgrades ingestclasses ingestcourses
 
 all: $(TARGETS)
 
@@ -44,11 +52,23 @@ $(INIT_SQL):
 query: $(INIT_SQL)
 	sqlite3 -table -header -init $<
 
-ingest: ingeststudents ingestgrades
+ingest: ingeststudents ingestgrades ingestclasses ingestcourses
 
 ingeststudents: $(INGEST_MARKER_STUDENTS)
 
+ingestcourses: $(INGEST_MARKER_COURSES)
+
 ingestgrades: $(INGEST_MARKER_GRADES)
+
+ingestclasses: $(INGEST_MARKER_CLASSES)
+
+$(INGEST_MARKER_COURSES): $(COURSES_JSON) | $(BRONZE_DB_PATH)
+	python ingest.py --db $(BRONZE_DB_PATH) courses $(COURSES_JSON)
+	touch $@
+
+$(INGEST_MARKER_CLASSES): $(CLASSES_JSON) | $(BRONZE_DB_PATH)
+	python ingest.py --db $(BRONZE_DB_PATH) classes $(CLASSES_JSON)
+	touch $@
 
 $(INGEST_MARKER_STUDENTS): $(STUDENTS_JSON) | $(BRONZE_DB_PATH)
 	python ingest.py --db $(BRONZE_DB_PATH) students $(STUDENTS_JSON)
@@ -66,6 +86,12 @@ database: $(SILVER_DB_PATH) $(BRONZE_DB_PATH)
 collectstudents: $(STUDENTS_JSON)
 
 collectgrades: $(GRADES_JSON)
+
+$(COURSES_JSON): $(COURSES_FILTER)
+	jq -f $(COURSES_FILTER) -s $(RAW_COURSES) > $@
+
+$(CLASSES_JSON): $(CLASSES_FILTER)
+	jq -f $(CLASSES_FILTER) -s $(RAW_CLASSES) > $@
 
 $(STUDENTS_JSON): $(_USERS_JSON) $(_STUDENTS_JSON) $(STUDENTS_JOIN_FILTER)
 	jq -n --slurpfile users $(_USERS_JSON) --slurpfile students $(_STUDENTS_JSON) -f $(STUDENTS_JOIN_FILTER) > $@
