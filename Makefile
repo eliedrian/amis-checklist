@@ -1,10 +1,11 @@
 ODIR=build
 DATA_DIR=data
 
-FILTER=filter.jq
-USERS_FILTER=users_filter.jq
-STUDENTS_FILTER=students_filter.jq
-STUDENTS_JOIN_FILTER=students_join_filter.jq
+FILTERS_DIR=filters
+FILTER=$(FILTERS_DIR)/filter.jq
+USERS_FILTER=$(FILTERS_DIR)/users_filter.jq
+STUDENTS_FILTER=$(FILTERS_DIR)/students_filter.jq
+STUDENTS_JOIN_FILTER=$(FILTERS_DIR)/students_join_filter.jq
 
 RAW_STUDENT_GRADES=$(wildcard $(DATA_DIR)/student-grades*.json)
 STUDENT_IDS=student_ids.txt
