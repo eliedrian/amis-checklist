@@ -39,6 +39,7 @@ INGEST_MARKER_STUDENTS=$(ODIR)/.ingested_students
 INGEST_MARKER_GRADES=$(ODIR)/.ingested_grades
 INGEST_MARKER_CLASSES=$(ODIR)/.ingested_classes
 INGEST_MARKER_COURSES=$(ODIR)/.ingested_courses
+SILVER_TARGET=$(ODIR)/.last_silver
 
 TARGETS=database collectgrades collectstudents ingest silver
 
@@ -53,8 +54,7 @@ $(INIT_SQL):
 	echo "ATTACH DATABASE '$(BRONZE_DB_PATH)' AS bronze;" > $@
 	echo "ATTACH DATABASE '$(SILVER_DB_PATH)' AS silver;" >> $@
 
-silver: $(INIT_SQL) $(SILVER_SQL) $(BRONZE_DB_PATH) | ingest
-	sqlite3 -init $< < $(SILVER_SQL)
+silver: $(SILVER_TARGET)
 
 query: $(INIT_SQL)
 	sqlite3 -table -header -init $<
@@ -68,6 +68,10 @@ ingestcourses: $(INGEST_MARKER_COURSES)
 ingestgrades: $(INGEST_MARKER_GRADES)
 
 ingestclasses: $(INGEST_MARKER_CLASSES)
+
+$(SILVER_TARGET): $(INIT_SQL) $(SILVER_SQL)
+	sqlite3 -init $< < $(SILVER_SQL)
+	touch $@
 
 $(INGEST_MARKER_COURSES): $(COURSES_JSON) | $(BRONZE_DB_PATH)
 	python ingest.py --db $(BRONZE_DB_PATH) courses $(COURSES_JSON)
