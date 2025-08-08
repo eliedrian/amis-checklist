@@ -4,7 +4,8 @@ CREATE TABLE IF NOT EXISTS Courses (
     description TEXT,
     units INTEGER,
     course_code TEXT,
-    raw_course_id INTEGER
+    raw_course_id INTEGER,
+    sais_course_id INTEGER
 );
 
 CREATE TABLE IF NOT EXISTS GradeValues (
@@ -55,6 +56,7 @@ CREATE TABLE IF NOT EXISTS Offerings (
     term INTEGER,
     course_id INTEGER,
     section TEXT,
+    raw_class_id INTEGER,
     FOREIGN KEY(course_id) REFERENCES Courses(id)
 );
 
@@ -64,7 +66,8 @@ CREATE TABLE IF NOT EXISTS OfferingSchedules (
     day TEXT,
     start_time TEXT,
     end_time TEXT,
-    FOREIGN KEY(offering_id) REFERENCES Offerings(id)
+    FOREIGN KEY(offering_id) REFERENCES Offerings(id),
+    UNIQUE(offering_id, day, start_time, end_time) ON CONFLICT REPLACE
 );
 
 CREATE TABLE IF NOT EXISTS Enlistments (

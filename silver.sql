@@ -20,13 +20,15 @@ INSERT OR IGNORE INTO silver.Courses (
     description,
     units,
     course_code,
-    raw_course_id
+    raw_course_id,
+    sais_course_id
 )
 SELECT
     title,
     description,
     units,
     course_code,
+    course_id,
     sais_course_id
 FROM bronze.courses;
 
@@ -44,4 +46,21 @@ SELECT
     g.campus_id,
     g.status like 'active'
 FROM bronze.Grades g
-JOIN silver.Courses c ON g.course_id = c.raw_course_id;
+JOIN silver.Courses c ON g.course_id = c.sais_course_id;
+
+INSERT INTO silver.Offerings (
+    term,
+    course_id,
+    section,
+    raw_class_id
+)
+SELECT
+    term_id,
+    co.id,
+    section,
+    cl.id
+FROM bronze.Classes cl
+JOIN silver.Courses co
+  ON cl.course_id = co.raw_course_id;
+
+.read silver__offering_schedules.sql
