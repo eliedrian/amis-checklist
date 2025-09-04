@@ -4,7 +4,7 @@
 BASE_URL="https://api-amis.upcebu.edu.ph/api/admins/student-grades"
 OUTPUT_FILE="testgrades.json"
 HEADERS_FILE="headers.txt"
-PAGE_SIZE=10000
+PAGE_SIZE=2500
 QUERY_PARAMETERS="&items=${PAGE_SIZE}&order_type=DESC&order_field=id&access_permission=student_grades_edit&campus_id_like=--&term_like=--&course_code_like=--"
 
 # Start page
@@ -19,10 +19,10 @@ while [ "$HAS_MORE" = true ]; do
     echo "Fetching page $PAGE..."
     
     # Fetch data
-	RESPONSE=$(echo curl \
-		-H "'Authorization: Bearer ${API_TOKEN}'" \
+	RESPONSE=$(curl -v \
+		-H "Authorization: Bearer ${API_TOKEN}" \
 		-H @$HEADERS_FILE \
-		"'${BASE_URL}?page=${PAGE}${QUERY_PARAMETERS}'")
+		${BASE_URL}?page=${PAGE}${QUERY_PARAMETERS})
 
     # Append response to file
     echo "$RESPONSE" >> "$OUTPUT_FILE"
