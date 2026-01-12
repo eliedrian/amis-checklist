@@ -48,12 +48,17 @@ SILVER_TARGET=$(ODIR)/.last_silver
 
 TARGETS=database collectgrades collectstudents ingest silver
 
-.phony: all clean collectgrades collectstudents query ingeststudents ingest ingestgrades ingestclasses ingestcourses silver
+.phony: all clean collectgrades collectstudents query ingeststudents ingest ingestgrades ingestclasses ingestcourses silver cleanbuild cleandata
 
 all: $(TARGETS)
 
-clean:
+cleanbuild:
 	rm -r $(ODIR)
+
+cleandata:
+	rm $(RAW_STUDENT_GRADES)
+
+clean: cleanbuild cleandata
 
 $(INIT_SQL):
 	echo "ATTACH DATABASE '$(BRONZE_DB_PATH)' AS bronze;" > $@
