@@ -1,3 +1,4 @@
+Host: api-amis.upcebu.edu.ph
 User-Agent: Mozilla/5.0 (X11; Linux x86_64; rv:142.0) Gecko/20100101 Firefox/142.0
 Accept: application/json, text/plain, */*
 Accept-Language: en-US,en;q=0.5
@@ -5,7 +6,6 @@ Accept-Encoding: gzip, deflate, br, zstd
 Referer: https://amis.upcebu.edu.ph/
 Origin: https://amis.upcebu.edu.ph
 Sec-GPC: 1
-Alt-Used: api-amis.upcebu.edu.ph
 Connection: keep-alive
 Sec-Fetch-Dest: empty
 Sec-Fetch-Mode: cors
