@@ -14,7 +14,7 @@ STUDENTS_JOIN_FILTER=$(FILTERS_DIR)/students_join_filter.jq
 CLASSES_FILTER=$(FILTERS_DIR)/classes_filter.jq
 COURSES_FILTER=$(FILTERS_DIR)/courses_filter.jq
 
-RAW_STUDENT_GRADES=$(wildcard $(DATA_DIR)/student-grades*.json)
+RAW_STUDENT_GRADES=$(addprefix $(DATA_DIR)/student-grades,121-2021.json 122-2021.json 123-2021.json 124-2021.json 125-2021.json 125-2025.json)
 STUDENT_IDS=student_ids.txt
 STUDENT_IDS_JSON=$(ODIR)/student_ids.json
 BRONZE_DB_NAME=bronze.db
@@ -129,3 +129,6 @@ $(STUDENT_IDS_JSON): $(STUDENT_IDS) | $(ODIR)
 
 $(GRADES_JSON): $(RAW_STUDENT_GRADES) $(STUDENT_IDS_JSON) $(FILTER) | $(ODIR)
 	jq --argjson ids '$(shell cat $(STUDENT_IDS_JSON))' -f $(FILTER) -s $(RAW_STUDENT_GRADES) > $@
+
+$(DATA_DIR)/student-grades%.json:
+	./fetch_grades.sh -t $(word 1,$(subst -, ,$*)) -s $(word 2,$(subst -, ,$*)) -o $@ -n
