@@ -64,3 +64,4 @@ JOIN silver.Courses co
   ON cl.course_id = co.raw_course_id;
 
 .read silver__offering_schedules.sql
+.read silver__enlistments.sql
