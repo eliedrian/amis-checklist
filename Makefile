@@ -13,6 +13,7 @@ STUDENTS_FILTER=$(FILTERS_DIR)/students_filter.jq
 STUDENTS_JOIN_FILTER=$(FILTERS_DIR)/students_join_filter.jq
 CLASSES_FILTER=$(FILTERS_DIR)/classes_filter.jq
 COURSES_FILTER=$(FILTERS_DIR)/courses_filter.jq
+ENLISTMENTS_FILTER=$(FILTERS_DIR)/enlistments_filter.jq
 
 RAW_STUDENT_GRADES=$(addprefix $(DATA_DIR)/student-grades,121-2021.json 122-2021.json 123-2021.json 124-2021.json 125-2021.json 125-2025.json)
 STUDENT_IDS=student_ids.txt
@@ -32,6 +33,7 @@ _STUDENTS_JSON=$(ODIR)/_students.jsonl
 STUDENTS_JSON=$(ODIR)/students.json
 CLASSES_JSON=$(ODIR)/classes.json
 COURSES_JSON=$(ODIR)/courses.json
+ENLISTMENTS_JSON=$(ODIR)/enlistments.json
 
 INIT_SQL=$(ODIR)/init.sql
 
@@ -39,16 +41,18 @@ RAW_USERS=$(wildcard $(DATA_DIR)/users*.json)
 RAW_STUDENTS=$(wildcard $(DATA_DIR)/students*.json)
 RAW_CLASSES=$(wildcard $(DATA_DIR)/classes*.json)
 RAW_COURSES=$(wildcard $(DATA_DIR)/courses*.json)
+RAW_ENLISTMENTS=$(addprefix $(DATA_DIR)/student-enlistments,1211-2021.json 1212-2021.json 1221-2021.json 1222-2021.json 1231-2021.json 1232-2021.json 1233-2021.json 1241-2021.json 1242-2021.json 1243-2021.json 1251-2021.json 1251-2025.json 1252-2021.json 1251-2025.json)
 
 INGEST_MARKER_STUDENTS=$(ODIR)/.ingested_students
 INGEST_MARKER_GRADES=$(ODIR)/.ingested_grades
 INGEST_MARKER_CLASSES=$(ODIR)/.ingested_classes
 INGEST_MARKER_COURSES=$(ODIR)/.ingested_courses
+INGEST_MARKER_ENLISTMENTS=$(ODIR)/.ingested_enlistments
 SILVER_TARGET=$(ODIR)/.last_silver
 
 TARGETS=database collectgrades collectstudents ingest silver
 
-.phony: all clean collectgrades collectstudents query ingeststudents ingest ingestgrades ingestclasses ingestcourses silver cleanbuild cleandata
+.phony: all clean collectgrades collectstudents query ingeststudents ingest ingestgrades ingestclasses ingestcourses silver cleanbuild cleandata ingestenlistments
 
 all: $(TARGETS)
 
@@ -69,7 +73,7 @@ silver: $(SILVER_TARGET)
 query: $(INIT_SQL)
 	sqlite3 -table -header -init $<
 
-ingest: ingeststudents ingestgrades ingestclasses ingestcourses
+ingest: ingeststudents ingestgrades ingestclasses ingestcourses ingestenlistments
 
 ingeststudents: $(INGEST_MARKER_STUDENTS)
 
@@ -78,6 +82,8 @@ ingestcourses: $(INGEST_MARKER_COURSES)
 ingestgrades: $(INGEST_MARKER_GRADES)
 
 ingestclasses: $(INGEST_MARKER_CLASSES)
+	
+ingestenlistments: $(INGEST_MARKER_ENLISTMENTS)
 
 $(SILVER_TARGET): $(INIT_SQL) $(SILVER_SQL)
 	sqlite3 -init $< < $(SILVER_SQL)
@@ -99,6 +105,10 @@ $(INGEST_MARKER_GRADES): $(GRADES_JSON) | $(BRONZE_DB_PATH)
 	python ingest.py --db $(BRONZE_DB_PATH) grades $(GRADES_JSON)
 	touch $@
 
+$(INGEST_MARKER_ENLISTMENTS): $(ENLISTMENTS_JSON) | $(BRONZE_DB_PATH)
+	python ingest.py --db $(BRONZE_DB_PATH) enlistments $(ENLISTMENTS_JSON)
+	touch $@
+
 $(ODIR):
 	mkdir -p $(ODIR)
 
@@ -110,6 +120,9 @@ collectgrades: $(GRADES_JSON)
 
 $(COURSES_JSON): $(COURSES_FILTER)
 	jq -f $(COURSES_FILTER) -s $(RAW_COURSES) > $@
+
+$(ENLISTMENTS_JSON): $(ENLISTMENTS_FILTER) $(RAW_ENLISTMENTS)
+	jq -f $(ENLISTMENTS_FILTER) -s $(RAW_ENLISTMENTS) > $@
 
 $(CLASSES_JSON): $(CLASSES_FILTER)
 	jq -f $(CLASSES_FILTER) -s $(RAW_CLASSES) > $@
@@ -137,3 +150,6 @@ $(GRADES_JSON): $(RAW_STUDENT_GRADES) $(STUDENT_IDS_JSON) $(FILTER) | $(ODIR)
 
 $(DATA_DIR)/student-grades%.json:
 	./fetch_grades.sh -t $(word 1,$(subst -, ,$*)) -s $(word 2,$(subst -, ,$*)) -o $@ -n
+
+$(DATA_DIR)/student-enlistments%.json:
+	./fetch_enlistments.sh -t $(word 1,$(subst -, ,$*)) -s $(word 2,$(subst -, ,$*)) -o $@ -n
