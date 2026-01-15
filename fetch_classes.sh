@@ -48,8 +48,6 @@ while [ "$HAS_MORE" = true ]; do
 		-H @$HEADERS_FILE \
 		${BASE_URL}?page=${PAGE}${QUERY_PARAMETERS})
 
-	echo "$RESPONSE"
-
     # Append response to file
     echo "$RESPONSE" >> "$OUTPUT_FILE"
 
