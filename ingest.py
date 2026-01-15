@@ -4,7 +4,7 @@ import json
 
 parser = argparse.ArgumentParser('ingest.py')
 parser.add_argument('--db', help='Path to an sqlite3 database.')
-parser.add_argument('type', choices=['students', 'grades', 'classes', 'courses'], help='Type of data to ingest.')
+parser.add_argument('type', choices=['students', 'grades', 'classes', 'courses', 'enlistments'], help='Type of data to ingest.')
 parser.add_argument('source', help='JSON data source.')
 args = parser.parse_args()
 
@@ -43,6 +43,12 @@ def class_tuple(c):
             c['hide_faculty'], c['is_partial_posting'], c['is_parent_class'],
             json.dumps(c['faculty_grades_assignments']), json.dumps(c['faculties']),
             json.dumps(c['class_dates']))
+
+def enlistments_tuple(c):
+    return (c['id'], c['student_enlistment_id'], c['class_id'], c['status'],
+            c['linked'], c['created_at'], c['updated_at'], c['remarks'],
+            c['is_enlisted_during_change_mat'], json.dumps(c['class']),
+            json.dumps(c['student_enlistment']))
 
 data = None
 
@@ -95,6 +101,16 @@ INSERT OR IGNORE INTO Courses (
 VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         cur.executemany(query, list(map(course_tuple, data)))
+
+    case 'enlistments':
+        query = """
+        INSERT OR IGNORE INTO Enlistments (
+        id, student_enlistment_id, class_id, status, linked, created_at,
+        updated_at, remarks, is_enlisted_during_change_mat, class,
+        student_enlistment)
+        VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
+        """
+        cur.executemany(query, list(map(enlistments_tuple, data)))
 
 con.commit()
 con.close()
