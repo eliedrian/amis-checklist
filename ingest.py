@@ -11,7 +11,7 @@ args = parser.parse_args()
 con = sqlite3.connect(args.db)
 
 def student_tuple(s):
-    return (s['id'], s['sais_id'], s['last_name'], s['first_name'], s['last_name'],
+    return (s['id'], s['sais_id'], s['last_name'], s['first_name'], s['middle_name'],
         s['email'], s['user_roles'], s['tester'], s['created_at'], s['updated_at'],
         s['google_id'], s['country_of_citizenship'], s['type_of_residency'],
         s['avatar'], s['name'], s['user_id'], s['campus_id'])
