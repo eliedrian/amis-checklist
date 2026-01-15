@@ -37,10 +37,10 @@ ENLISTMENTS_JSON=$(ODIR)/enlistments.json
 
 INIT_SQL=$(ODIR)/init.sql
 
-RAW_USERS=$(wildcard $(DATA_DIR)/users*.json)
-RAW_STUDENTS=$(wildcard $(DATA_DIR)/students*.json)
-RAW_CLASSES=$(wildcard $(DATA_DIR)/classes*.json)
-RAW_COURSES=$(wildcard $(DATA_DIR)/courses*.json)
+RAW_USERS=$(DATA_DIR)/users.json
+RAW_STUDENTS=$(addprefix $(DATA_DIR)/students,2021.json 2025.json)
+RAW_CLASSES=$(addprefix $(DATA_DIR)/classes,121.json 122.json 123.json 124.json 125.json)
+RAW_COURSES=$(addprefix $(DATA_DIR)/,courses.json)
 RAW_ENLISTMENTS=$(addprefix $(DATA_DIR)/student-enlistments,1211-2021.json 1212-2021.json 1221-2021.json 1222-2021.json 1231-2021.json 1232-2021.json 1233-2021.json 1241-2021.json 1242-2021.json 1243-2021.json 1251-2021.json 1251-2025.json 1252-2021.json 1251-2025.json)
 
 INGEST_MARKER_STUDENTS=$(ODIR)/.ingested_students
@@ -85,7 +85,7 @@ ingestclasses: $(INGEST_MARKER_CLASSES)
 	
 ingestenlistments: $(INGEST_MARKER_ENLISTMENTS)
 
-$(SILVER_TARGET): $(INIT_SQL) $(SILVER_SQL)
+$(SILVER_TARGET): $(INIT_SQL) $(SILVER_SQL) $(INGEST_MARKER_STUDENTS) $(INGEST_MARKER_GRADES) $(INGEST_MARKER_CLASSES) $(INGEST_MARKER_COURSES) $(INGEST_MARKER_ENLISTMENTS)
 	sqlite3 -init $< < $(SILVER_SQL)
 	touch $@
 
@@ -118,13 +118,13 @@ collectstudents: $(STUDENTS_JSON)
 
 collectgrades: $(GRADES_JSON)
 
-$(COURSES_JSON): $(COURSES_FILTER)
-	jq -f $(COURSES_FILTER) -s $(RAW_COURSES) > $@
-
 $(ENLISTMENTS_JSON): $(ENLISTMENTS_FILTER) $(RAW_ENLISTMENTS)
 	jq -f $(ENLISTMENTS_FILTER) -s $(RAW_ENLISTMENTS) > $@
 
-$(CLASSES_JSON): $(CLASSES_FILTER)
+$(COURSES_JSON): $(COURSES_FILTER) $(RAW_COURSES)
+	jq -f $(COURSES_FILTER) -s $(RAW_COURSES) > $@
+
+$(CLASSES_JSON): $(CLASSES_FILTER) $(RAW_CLASSES)
 	jq -f $(CLASSES_FILTER) -s $(RAW_CLASSES) > $@
 
 $(STUDENTS_JSON): $(_USERS_JSON) $(_STUDENTS_JSON) $(STUDENTS_JOIN_FILTER)
@@ -148,8 +148,20 @@ $(STUDENT_IDS_JSON): $(STUDENT_IDS) | $(ODIR)
 $(GRADES_JSON): $(RAW_STUDENT_GRADES) $(STUDENT_IDS_JSON) $(FILTER) | $(ODIR)
 	jq --argjson ids '$(shell cat $(STUDENT_IDS_JSON))' -f $(FILTER) -s $(RAW_STUDENT_GRADES) > $@
 
+$(DATA_DIR)/users.json:
+	./fetch_users.sh -o $@ -n
+
 $(DATA_DIR)/student-grades%.json:
 	./fetch_grades.sh -t $(word 1,$(subst -, ,$*)) -s $(word 2,$(subst -, ,$*)) -o $@ -n
+
+$(DATA_DIR)/students%.json:
+	./fetch_students.sh -s $* -o $@ -n
+
+$(DATA_DIR)/classes%.json:
+	./fetch_classes.sh -t $* -o $@ -n
+
+$(DATA_DIR)/courses.json:
+	./fetch_courses.sh -o $@ -n
 
 $(DATA_DIR)/student-enlistments%.json:
 	./fetch_enlistments.sh -t $(word 1,$(subst -, ,$*)) -s $(word 2,$(subst -, ,$*)) -o $@ -n
