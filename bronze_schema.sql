@@ -100,3 +100,17 @@ CREATE TABLE IF NOT EXISTS Courses (
     teaching_model TEXT,
     requisites TEXT
 );
+
+CREATE TABLE IF NOT EXISTS Enlistments (
+    id INTEGER PRIMARY KEY,
+    student_enlistment_id INTEGER,
+    class_id INTEGER,
+    status TEXT,
+    linked BOOLEAN,
+    created_at TEXT,
+    updated_at TEXT,
+    remarks TEXT,
+    is_enlisted_during_change_mat BOOLEAN,
+    class TEXT,
+    student_enlistment TEXT
+);
