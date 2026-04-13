@@ -22,10 +22,15 @@ BRONZE_DB_NAME=bronze.db
 BRONZE_DB_PATH=$(ODIR)/$(BRONZE_DB_NAME)
 SILVER_DB_NAME=silver.db
 SILVER_DB_PATH=$(ODIR)/$(SILVER_DB_NAME)
+GOLD_DB_NAME=gold.db
+GOLD_DB_PATH=$(ODIR)/$(GOLD_DB_NAME)
 
 SILVER_SCHEMA_SQL=silver_schema.sql
 BRONZE_SCHEMA_SQL=bronze_schema.sql
+GOLD_SCHEMA_SQL=gold_schema.sql
+
 SILVER_SQL=silver.sql
+GOLD_SQL=gold.sql
 
 GRADES_JSON=$(ODIR)/grades.json
 _USERS_JSON=$(ODIR)/_users.jsonl
@@ -49,10 +54,11 @@ INGEST_MARKER_CLASSES=$(ODIR)/.ingested_classes
 INGEST_MARKER_COURSES=$(ODIR)/.ingested_courses
 INGEST_MARKER_ENLISTMENTS=$(ODIR)/.ingested_enlistments
 SILVER_TARGET=$(ODIR)/.last_silver
+GOLD_TARGET=$(ODIR)/.last_gold
 
-TARGETS=database collectgrades collectstudents ingest silver
+TARGETS=database collectgrades collectstudents ingest silver gold
 
-.phony: all clean collectgrades collectstudents query ingeststudents ingest ingestgrades ingestclasses ingestcourses silver cleanbuild cleandata ingestenlistments
+.phony: all clean collectgrades collectstudents query ingeststudents ingest ingestgrades ingestclasses ingestcourses silver cleanbuild cleandata ingestenlistments gold
 
 all: $(TARGETS)
 
@@ -67,8 +73,11 @@ clean: cleanbuild cleandata
 $(INIT_SQL):
 	echo "ATTACH DATABASE '$(BRONZE_DB_PATH)' AS bronze;" > $@
 	echo "ATTACH DATABASE '$(SILVER_DB_PATH)' AS silver;" >> $@
+	echo "ATTACH DATABASE '$(GOLD_DB_PATH)' AS gold;" >> $@
 
 silver: $(SILVER_TARGET)
+
+gold: $(GOLD_TARGET)
 
 query: $(INIT_SQL)
 	sqlite3 -table -header -init $<
@@ -84,6 +93,10 @@ ingestgrades: $(INGEST_MARKER_GRADES)
 ingestclasses: $(INGEST_MARKER_CLASSES)
 	
 ingestenlistments: $(INGEST_MARKER_ENLISTMENTS)
+
+$(GOLD_TARGET): $(INIT_SQL) $(GOLD_SQL) $(INGEST_MARKER_STUDENTS) $(INGEST_MARKER_GRADES) $(INGEST_MARKER_CLASSES) $(INGEST_MARKER_COURSES) $(INGEST_MARKER_ENLISTMENTS)
+	sqlite3 -init $< < $(GOLD_SQL)
+	touch $@
 
 $(SILVER_TARGET): $(INIT_SQL) $(SILVER_SQL) $(INGEST_MARKER_STUDENTS) $(INGEST_MARKER_GRADES) $(INGEST_MARKER_CLASSES) $(INGEST_MARKER_COURSES) $(INGEST_MARKER_ENLISTMENTS)
 	sqlite3 -init $< < $(SILVER_SQL)
@@ -112,7 +125,7 @@ $(INGEST_MARKER_ENLISTMENTS): $(ENLISTMENTS_JSON) | $(BRONZE_DB_PATH)
 $(ODIR):
 	mkdir -p $(ODIR)
 
-database: $(SILVER_DB_PATH) $(BRONZE_DB_PATH)
+database: $(SILVER_DB_PATH) $(BRONZE_DB_PATH) $(GOLD_DB_PATH)
 
 collectstudents: $(STUDENTS_JSON)
 
@@ -140,6 +153,9 @@ $(BRONZE_DB_PATH): $(BRONZE_SCHEMA_SQL) | $(ODIR)
 	sqlite3 $@ < $<
 
 $(SILVER_DB_PATH): $(SILVER_SCHEMA_SQL) | $(ODIR)
+	sqlite3 $@ < $<
+
+$(GOLD_DB_PATH): $(GOLD_SCHEMA_SQL) | $(ODIR)
 	sqlite3 $@ < $<
 
 $(STUDENT_IDS_JSON): $(STUDENT_IDS) | $(ODIR)
