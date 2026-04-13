@@ -55,8 +55,9 @@ data = None
 try:
     with open(args.source) as source:
         data = json.load(source)
-except e:
-    print('JSON load failure.')
+except Exception as e:
+    print('JSON load failure.', e)
+    exit()
 
 cur = con.cursor()
 
