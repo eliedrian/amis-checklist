@@ -22,7 +22,7 @@ done
 
 # Base URL of the API (example with ?page=)
 #https://api-amis.upcebu.edu.ph/api/courses?page=1&items=5&order_type=ASC&order_field=course_code&with_requisites=true&title_like=&course_code_like=cmsc
-BASE_URL="https://api-amis.upcebu.edu.ph/api/admins/courses"
+BASE_URL="https://api-amis.upcebu.edu.ph/api/courses"
 HEADERS_FILE="headers.txt"
 PAGE_SIZE=2500
 QUERY_PARAMETERS="&items=${PAGE_SIZE}&order_type=ASC&order_field=course_code&with_requisites=true&title_like=&course_code_like=--"
