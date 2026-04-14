@@ -10,7 +10,7 @@ select
 	c.course_code as course_code,
 	g.term as term,
 	g.student_number as student_number,
-	format('%s, %s %s', s.last_name, s.first_name, s.last_name) as student_name
+	format('%s, %s %s', s.last_name, s.first_name, s.middle_name) as student_name
 from silver.grades g
 join silver.courses c
 on g.course_id = c.id
