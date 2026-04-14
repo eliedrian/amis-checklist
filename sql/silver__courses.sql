@@ -1,4 +1,5 @@
-insert or ignore into silver.Courses (
+delete from silver.Courses;
+insert into silver.Courses (
     title,
     description,
     units,

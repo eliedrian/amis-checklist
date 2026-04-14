@@ -1,3 +1,4 @@
+delete from silver.Offerings;
 insert into silver.Offerings (
     term,
     course_id,

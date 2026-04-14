@@ -1,3 +1,4 @@
+delete from silver.Enlistments;
 INSERT INTO silver.Enlistments (
     student_number,
     offering_id

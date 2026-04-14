@@ -1,4 +1,5 @@
-insert or ignore into silver.Students (
+delete from silver.Students;
+insert into silver.Students (
     student_number,
     email,
     last_name,

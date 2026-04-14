@@ -1,3 +1,4 @@
+delete from silver.Grades;
 insert into silver.Grades (
     term,
     course_id,

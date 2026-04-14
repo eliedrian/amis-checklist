@@ -1,3 +1,4 @@
+delete from silver.OfferingSchedules;
 INSERT INTO silver.OfferingSchedules (
     offering_id,
     day,
