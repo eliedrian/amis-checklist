@@ -7,6 +7,14 @@ CREATE TABLE IF NOT EXISTS Grades (
 	student_name TEXT
 );
 
+create table if not exists Gwa (
+	id integer primary key,
+	student_number text,
+	student_name text,
+	gwa real,
+	units_earned integer
+);
+
 -- create view if not exists gwa (
 --         name,
 --         student_number,

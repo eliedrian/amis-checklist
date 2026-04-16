@@ -1,12 +1,18 @@
 # TODO
 
+- [x] fix students table
 - [x] mine student information
 - [x] compile student info
-- [ ] script data collection, take auth as env
+- [x] script data collection, take auth as env
 - [x] design schema
 - [ ] build gold tables
+    - [ ] grades
+    - [x] gwa
+    - [ ] according to curriculum
 - [ ] collect faculty info
 - [ ] collect enlistments
+- [ ] migrations
+- [ ] loading in sql init files currently reference directories (ex. ".read sql/silver__grades.sql")
 
 ## GWA computation
 
