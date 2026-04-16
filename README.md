@@ -2,6 +2,15 @@
 
 Populate relevant student numbers in `student_ids.txt`, one per line.
 
+And set `API_TOKEN` under `.env`.
+The token is obtained from the URL as a query parameter after logging into AMIS.
+
+Run `make` to fetch and generate tables.
+
+`make clean` to remove generated files.
+
+`make cleanbuild` to remove tables only.
+
 ### Updating
 
 Probably (for now) `make clean` and update `Makefile` to collect new data for new terms.
