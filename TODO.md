@@ -7,7 +7,8 @@
 - [x] design schema
 - [ ] build gold tables
     - [ ] grades
-    - [x] gwa
+    - [x] gwa (partial)
+    - [ ] update gwa table to look at curriculum
     - [ ] according to curriculum
 - [ ] collect faculty info
 - [ ] collect enlistments
