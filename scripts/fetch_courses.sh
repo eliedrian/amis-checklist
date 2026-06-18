@@ -2,7 +2,7 @@
 
 set -e
 
-MAXWAIT=13
+MAXWAIT=120
 
 while getopts o:n args; do
 		case "${args}" in

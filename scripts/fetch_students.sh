@@ -1,6 +1,6 @@
 #!/bin/sh
 
-MAXWAIT=13
+MAXWAIT=120
 
 while getopts s:t:o:n args; do
 		case "${args}" in

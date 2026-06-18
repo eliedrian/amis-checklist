@@ -2,7 +2,7 @@
 
 set -e
 
-MAXWAIT=13
+MAXWAIT=120
 
 CAMPUS_ID_LIKE=--
 
