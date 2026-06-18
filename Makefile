@@ -91,10 +91,15 @@ TARGETS=database collectgrades collectstudents ingest silver gold
 all: $(TARGETS)
 
 cleanbuild:
-	rm -r $(ODIR)
+	-rm -r $(ODIR)
 
 cleandata:
-	rm $(RAW_STUDENT_GRADES)
+	-rm $(RAW_COURSES)
+	-rm $(RAW_CLASSES)
+	-rm $(RAW_ENLISTMENTS)
+	-rm $(RAW_STUDENTS)
+	-rm $(RAW_STUDENT_GRADES)
+	-rm $(RAW_USERS)
 
 clean: cleanbuild cleandata
 
