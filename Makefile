@@ -17,7 +17,14 @@ CLASSES_FILTER=$(FILTERS_DIR)/classes_filter.jq
 COURSES_FILTER=$(FILTERS_DIR)/courses_filter.jq
 ENLISTMENTS_FILTER=$(FILTERS_DIR)/enlistments_filter.jq
 
-RAW_STUDENT_GRADES=$(addprefix $(DATA_DIR)/student-grades,121-2021.json 122-2021.json 123-2021.json 124-2021.json 125-2021.json 125-2025.json)
+TERMS := 121 122 123 124 125
+YEARS := 2021 2022 2023 2024 2025
+
+RAW_STUDENT_GRADES := \
+    $(foreach y,$(YEARS),\
+        $(foreach t,$(TERMS),\
+            $(DATA_DIR)/student-grades$(t)-$(y).json))
+
 STUDENT_IDS=student_ids.txt
 STUDENT_IDS_JSON=$(ODIR)/student_ids.json
 
@@ -54,10 +61,20 @@ INGEST_SCRIPT=$(SCRIPT_DIR)/ingest.py
 INIT_SQL=$(ODIR)/init.sql
 
 RAW_USERS=$(DATA_DIR)/users.json
-RAW_STUDENTS=$(addprefix $(DATA_DIR)/students,2021.json 2025.json)
-RAW_CLASSES=$(addprefix $(DATA_DIR)/classes,121.json 122.json 123.json 124.json 125.json)
+RAW_STUDENTS := \
+    $(foreach y,$(YEARS),\
+	    $(DATA_DIR)/students$(y).json))
+
+RAW_CLASSES := \
+    $(foreach t,$(TERMS),\
+	    $(DATA_DIR)/classes$(t).json))
+
 RAW_COURSES=$(addprefix $(DATA_DIR)/,courses.json)
-RAW_ENLISTMENTS=$(addprefix $(DATA_DIR)/student-enlistments,1211-2021.json 1212-2021.json 1221-2021.json 1222-2021.json 1231-2021.json 1232-2021.json 1233-2021.json 1241-2021.json 1242-2021.json 1243-2021.json 1251-2021.json 1251-2025.json 1252-2021.json 1251-2025.json)
+
+RAW_ENLISTMENTS := \
+    $(foreach y,$(YEARS), \
+	    $(foreach t,$(TERMS), \
+		$(DATA_DIR)/student-enlistments$(t)-$(y).json)))
 
 INGEST_MARKER_STUDENTS=$(ODIR)/.ingested_students
 INGEST_MARKER_GRADES=$(ODIR)/.ingested_grades
@@ -179,7 +196,7 @@ $(DATA_DIR)/users.json:
 	./$(SCRIPT_DIR)/fetch_users.sh -o $@ -n
 
 $(DATA_DIR)/student-grades%.json:
-	./$(SCRIPT_DIR)/fetch_grades.sh -t $(word 1,$(subst -, ,$*)) -s $(word 2,$(subst -, ,$*)) -o $@ -n
+	./$(SCRIPT_DIR)/fetch_grades.sh -t $(word 1,$(subst -, ,$*)) -s $(word 2,$(subst -, ,$*)) -o $@
 
 $(DATA_DIR)/students%.json:
 	./$(SCRIPT_DIR)/fetch_students.sh -s $* -o $@ -n
@@ -191,4 +208,4 @@ $(DATA_DIR)/courses.json:
 	./$(SCRIPT_DIR)/fetch_courses.sh -o $@ -n
 
 $(DATA_DIR)/student-enlistments%.json:
-	./$(SCRIPT_DIR)/fetch_enlistments.sh -t $(word 1,$(subst -, ,$*)) -s $(word 2,$(subst -, ,$*)) -o $@ -n
+	./$(SCRIPT_DIR)/fetch_enlistments.sh -t $(word 1,$(subst -, ,$*)) -s $(word 2,$(subst -, ,$*)) -o $@
