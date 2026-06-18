@@ -2,7 +2,7 @@
 
 set -e
 
-MAXWAIT=120
+WAIT=3
 
 while getopts s:t:o:n args; do
 		case "${args}" in
@@ -16,7 +16,7 @@ while getopts s:t:o:n args; do
 						OUTPUT_FILE=${OPTARG}
 						;;
 				n) # -n turn off wait
-						MAXWAIT=0
+						WAIT=0
 						;;
 				*)
 						echo "Wrong arguments"
@@ -50,21 +50,21 @@ while [ "$HAS_MORE" = true ]; do
 		-H @$HEADERS_FILE \
 		${BASE_URL}?page=${PAGE}${QUERY_PARAMETERS})
 
-    # Append response to file
-    echo "$RESPONSE" >> "$OUTPUT_FILE"
-
 	TOTAL=$(echo "$RESPONSE" | jq '.[].total')
     TO=$(echo "$RESPONSE" | jq '.[].to')
-    if [ "$TO" -eq "$TOTAL" ]; then
-        HAS_MORE=false
-		break
+	LAST_PAGE=$(echo "$RESPONSE" | jq '.[].last_page')
+	if [ "$LAST_PAGE" -eq "$PAGE" ]; then
+		HAS_MORE=false
     else
         PAGE=$((PAGE + 1))
     fi
 
-	if [ "$MAXWAIT" -ne "0" ]; then
-			echo "Adding random wait..."
-			sleep $(( ( RANDOM % $MAXWAIT )  + 1 ))
+    # Append response to file
+    echo "$RESPONSE" >> "$OUTPUT_FILE"
+
+	if [ "$WAIT" -ne "0" ] && [ $HAS_MORE = true ]; then
+			echo "Adding wait..."
+			sleep "$WAIT"
 	fi
 done
 
