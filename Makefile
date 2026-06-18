@@ -17,12 +17,15 @@ CLASSES_FILTER=$(FILTERS_DIR)/classes_filter.jq
 COURSES_FILTER=$(FILTERS_DIR)/courses_filter.jq
 ENLISTMENTS_FILTER=$(FILTERS_DIR)/enlistments_filter.jq
 
-TERMS := 121 122 123 124 125
+TERMS_PREFIX := 121 122 123 124 125
+TERMS := \
+    $(foreach p,$(TERMS_PREFIX),\
+	$(addprefix $(p),1 2 3))
 YEARS := 2021 2022 2023 2024 2025
 
 RAW_STUDENT_GRADES := \
     $(foreach y,$(YEARS),\
-        $(foreach t,$(TERMS),\
+        $(foreach t,$(TERMS_PREFIX),\
             $(DATA_DIR)/student-grades$(t)-$(y).json))
 
 STUDENT_IDS=student_ids.txt
@@ -63,18 +66,18 @@ INIT_SQL=$(ODIR)/init.sql
 RAW_USERS=$(DATA_DIR)/users.json
 RAW_STUDENTS := \
     $(foreach y,$(YEARS),\
-	    $(DATA_DIR)/students$(y).json))
+	    $(DATA_DIR)/students$(y).json)
 
 RAW_CLASSES := \
-    $(foreach t,$(TERMS),\
-	    $(DATA_DIR)/classes$(t).json))
+    $(foreach t,$(TERMS_PREFIX),\
+	    $(DATA_DIR)/classes$(t).json)
 
 RAW_COURSES=$(addprefix $(DATA_DIR)/,courses.json)
 
 RAW_ENLISTMENTS := \
     $(foreach y,$(YEARS), \
 	    $(foreach t,$(TERMS), \
-		$(DATA_DIR)/student-enlistments$(t)-$(y).json)))
+		$(DATA_DIR)/student-enlistments$(t)-$(y).json))
 
 INGEST_MARKER_STUDENTS=$(ODIR)/.ingested_students
 INGEST_MARKER_GRADES=$(ODIR)/.ingested_grades
