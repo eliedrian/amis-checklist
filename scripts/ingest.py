@@ -10,6 +10,9 @@ args = parser.parse_args()
 
 con = sqlite3.connect(args.db)
 
+def curriculums_tuple(s):
+    return ()
+
 def student_tuple(s):
     return (s['id'], s['sais_id'], s['last_name'], s['first_name'], s['middle_name'],
         s['email'], s['user_roles'], s['tester'], s['created_at'], s['updated_at'],
@@ -112,6 +115,19 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
         VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)
         """
         cur.executemany(query, list(map(enlistments_tuple, data)))
+
+    case 'curriculums':
+        query = """
+        insert or ignore into curriculums (
+            year,
+            semester,
+            course_code,
+            program,
+            revision
+        )
+        values (?, ?, ?, ?, ?)
+        """
+        cur.executemany(query, list(map(curriculums_tuple, data)))
 
 con.commit()
 con.close()
