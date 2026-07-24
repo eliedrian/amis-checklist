@@ -13,4 +13,4 @@ select
     g.campus_id,
     g.status like 'active'
 from bronze.Grades g
-join silver.Courses c on g.course_id = c.sais_course_id;
+join silver.Courses c on g.course_code = c.course_code;
