@@ -1,3 +1,4 @@
+delete from gold.grades;
 insert or ignore into gold.grades (
 		grade,
 		course_code,
