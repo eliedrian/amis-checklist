@@ -10,6 +10,7 @@
     - [x] gwa (partial)
     - [ ] update gwa table to look at curriculum
     - [ ] according to curriculum
+    - [ ] semestral gwa
 - [ ] collect faculty info
 - [ ] collect enlistments
 - [ ] migrations
