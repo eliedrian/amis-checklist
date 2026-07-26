@@ -2,7 +2,7 @@
 
 set -e
 
-WAIT=3
+WAIT=30
 
 while getopts s:t:o:n args; do
 		case "${args}" in
