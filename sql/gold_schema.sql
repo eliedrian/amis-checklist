@@ -15,6 +15,16 @@ create table if not exists Gwa (
 	units_earned integer
 );
 
+create table if not exists Enlistments (
+	id integer primary key,
+	student_number text,
+	student_name text,
+	term integer,
+	course_code text,
+	section text,
+	units integer
+);
+
 -- create view if not exists gwa (
 --         name,
 --         student_number,
