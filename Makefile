@@ -129,7 +129,7 @@ ingestclasses: $(ingest_marker_classes)
 	
 ingestenlistments: $(ingest_marker_enlistments)
 
-$(gold_target): $(init_sql) $(gold_sql) $(silver_sql) $(ingest_marker_students) $(ingest_marker_grades) $(ingest_marker_classes) $(ingest_marker_courses) $(ingest_marker_enlistments) 
+$(gold_target): $(init_sql) $(gold_sql) $(ingest_marker_students) $(ingest_marker_grades) $(ingest_marker_classes) $(ingest_marker_courses) $(ingest_marker_enlistments) 
 	sqlite3 -init $< < $(gold_sql)
 	touch $@
 
@@ -197,10 +197,10 @@ $(_students_json): $(raw_students) $(student_ids_json) | $(ODIR)
 $(bronze_db): $(bronze_schema_sql) | $(ODIR)
 	sqlite3 $@ < $<
 
-$(silver_db): $(silver_schema_sql) $(bronze_schema_sql) | $(ODIR)
+$(silver_db): $(silver_schema_sql) | $(ODIR)
 	sqlite3 $@ < $<
 
-$(gold_db): $(gold_schema_sql) $(silver_schema_sql) $(bronze_schema_sql) | $(ODIR)
+$(gold_db): $(gold_schema_sql) | $(ODIR)
 	sqlite3 $@ < $<
 
 $(student_ids_json): $(student_ids) | $(ODIR)

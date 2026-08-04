@@ -6,25 +6,15 @@ insert or ignore into gold.grades (
 		student_number,
 		student_name
 ) 
-with distinct_courses as (
-	select
-		max(id) as id,
-		course_code
-	from silver.courses c
-	group by course_code
-),
-final as (
-	select
-		g.grade as grade,
-		c.course_code as course_code,
-		g.term as term,
-		g.student_number as student_number,
-		format('%s, %s %s', s.last_name, s.first_name, s.middle_name) as student_name
-	from silver.grades g
-	join distinct_courses c
-	  on g.course_id = c.id
-	join silver.students s
-	  on g.student_number = s.student_number
-	where active = true
-)
-select * from final;
+select
+	g.grade as grade,
+	c.course_code as course_code,
+	g.term as term,
+	g.student_number as student_number,
+	format('%s, %s %s', s.last_name, s.first_name, s.middle_name) as student_name
+from silver.grades g
+join silver.courses c
+on g.course_id = c.id
+join silver.students s
+on g.student_number = s.student_number
+where active = true
