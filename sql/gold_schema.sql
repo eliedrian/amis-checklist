@@ -25,6 +25,14 @@ create table if not exists Enlistments (
 	units integer
 );
 
+create table if not exists UnitLoad (
+	id integer primary key,
+	student_number text,
+	student_name text,
+	term integer,
+	units integer
+);
+
 -- create view if not exists gwa (
 --         name,
 --         student_number,
