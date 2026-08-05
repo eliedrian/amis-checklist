@@ -33,6 +33,17 @@ create table if not exists UnitLoad (
 	units integer
 );
 
+create table if not exists CourseConflicts (
+	id integer primary key,
+	student_number text,
+	student_name text,
+	term integer,
+	course_a text,
+	course_b text,
+	time_a text,
+	time_b text
+);
+
 -- create view if not exists gwa (
 --         name,
 --         student_number,
