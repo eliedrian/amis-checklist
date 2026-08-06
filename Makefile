@@ -106,7 +106,8 @@ cleandata:
 clean: cleanbuild cleandata
 
 $(init_sql):
-	echo "ATTACH DATABASE '$(bronze_db)' AS bronze;" > $@
+	echo ".timeout 10000" > $@
+	echo "ATTACH DATABASE '$(bronze_db)' AS bronze;" >> $@
 	echo "ATTACH DATABASE '$(silver_db)' AS silver;" >> $@
 	echo "ATTACH DATABASE '$(gold_db)' AS gold;" >> $@
 
@@ -115,7 +116,7 @@ silver: $(silver_target)
 gold: $(gold_target)
 
 query: $(init_sql) $(silver_target) $(gold_target)
-	sqlite3 -table -header -init $<
+	-sqlite3 -table -header -init $<
 
 ingest: ingeststudents ingestgrades ingestclasses ingestcourses ingestenlistments
 
@@ -129,7 +130,10 @@ ingestclasses: $(ingest_marker_classes)
 	
 ingestenlistments: $(ingest_marker_enlistments)
 
-$(gold_target): $(init_sql) $(gold_sql) $(ingest_marker_students) $(ingest_marker_grades) $(ingest_marker_classes) $(ingest_marker_courses) $(ingest_marker_enlistments) 
+# we build tables twice since some tables depend on gold as well.
+# Order of execution depends on filename ordering (in gold_sql_files)
+$(gold_target): $(init_sql) $(gold_sql) $(silver_target)
+	sqlite3 -init $< < $(gold_sql)
 	sqlite3 -init $< < $(gold_sql)
 	touch $@
 
@@ -138,7 +142,9 @@ $(gold_sql): $(gold_sql_files)
 	$(file >$@,)
 	$(foreach f,$(gold_sql_files),$(file >>$@,.read $(f)))
 
-$(silver_target): $(init_sql) $(silver_sql) $(ingest_marker_students) $(ingest_marker_grades) $(ingest_marker_classes) $(ingest_marker_courses) $(ingest_marker_enlistments)
+# same as gold_target, build tables twice
+$(silver_target): $(init_sql) $(silver_sql) $(bronze_db)
+	sqlite3 -init $< < $(silver_sql)
 	sqlite3 -init $< < $(silver_sql)
 	touch $@
 
@@ -195,13 +201,13 @@ $(_students_json): $(raw_students) $(student_ids_json) | $(ODIR)
 	jq -f $(students_filter) --slurpfile ids $(student_ids_json) -s $(raw_students) -c > $@
 
 $(bronze_db): $(bronze_schema_sql) | $(ODIR)
-	sqlite3 $@ < $<
+	sqlite3 -cmd '.timeout 10000' $@ < $<
 
 $(silver_db): $(silver_schema_sql) | $(ODIR)
-	sqlite3 $@ < $<
+	sqlite3 -cmd '.timeout 10000' $@ < $<
 
 $(gold_db): $(gold_schema_sql) | $(ODIR)
-	sqlite3 $@ < $<
+	sqlite3 -cmd '.timeout 10000' $@ < $<
 
 $(student_ids_json): $(student_ids) | $(ODIR)
 	jq -R -s -c 'split("\n") | map(select(length > 0))' $< > $@

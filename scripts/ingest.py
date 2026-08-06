@@ -8,7 +8,7 @@ parser.add_argument('type', choices=['students', 'grades', 'classes', 'courses',
 parser.add_argument('source', help='JSON data source.')
 args = parser.parse_args()
 
-con = sqlite3.connect(args.db)
+con = sqlite3.connect(args.db, timeout=10)
 
 def curriculums_tuple(s):
     return ()
