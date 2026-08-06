@@ -85,6 +85,7 @@ ingest_marker_grades=$(ODIR)/.ingested_grades
 ingest_marker_classes=$(ODIR)/.ingested_classes
 ingest_marker_courses=$(ODIR)/.ingested_courses
 ingest_marker_enlistments=$(ODIR)/.ingested_enlistments
+bronze_target=$(ODIR)/.last_bronze
 silver_target=$(ODIR)/.last_silver
 gold_target=$(ODIR)/.last_gold
 
@@ -143,9 +144,14 @@ $(gold_sql): $(gold_sql_files)
 	$(foreach f,$(gold_sql_files),$(file >>$@,.read $(f)))
 
 # same as gold_target, build tables twice
-$(silver_target): $(init_sql) $(silver_sql) $(bronze_db)
+$(silver_target): $(init_sql) $(silver_sql) $(bronze_target)
 	sqlite3 -init $< < $(silver_sql)
 	sqlite3 -init $< < $(silver_sql)
+	touch $@
+
+$(bronze_target): $(ingest_marker_students) $(ingest_marker_courses) \
+	$(ingest_marker_grades) $(ingest_marker_classes) \
+	$(ingest_marker_enlistments) | $(bronze_db)
 	touch $@
 
 silver_sql_files=$(wildcard $(SQL_DIR)/silver__*.sql)
