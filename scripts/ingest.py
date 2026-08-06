@@ -3,15 +3,17 @@ import sqlite3
 import json
 
 parser = argparse.ArgumentParser('ingest.py')
-parser.add_argument('--db', help='Path to an sqlite3 database.')
-parser.add_argument('type', choices=['students', 'grades', 'classes', 'courses', 'enlistments'], help='Type of data to ingest.')
+parser.add_argument('--db', help='Path to an sqlite3 database.', required=True)
+parser.add_argument('type', choices=['students', 'grades', 'classes', 'courses', 'enlistments', 'curriculums'], help='Type of data to ingest.')
 parser.add_argument('source', help='JSON data source.')
+parser.add_argument('--program', help='Program name (used by curriculums)')
+parser.add_argument('--revision', help='Revision name (used by curriculums)')
 args = parser.parse_args()
 
 con = sqlite3.connect(args.db, timeout=10)
 
 def curriculums_tuple(s):
-    return ()
+    return (s['Year'], s['Semester'], s['Course'], args.program, args.revision)
 
 def student_tuple(s):
     return (s['id'], s['sais_id'], s['last_name'], s['first_name'], s['middle_name'],
@@ -121,7 +123,7 @@ VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, 
         insert or ignore into curriculums (
             year,
             semester,
-            course_code,
+            course,
             program,
             revision
         )

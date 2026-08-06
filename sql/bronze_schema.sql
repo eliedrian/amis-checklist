@@ -119,7 +119,7 @@ create table if not exists Curriculums (
 	id integer primary key,
 	year integer,
 	semester integer,
-	course_code text,
+	course text,
 	program text,
-	revision integer
+	revision text
 );
